@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">My Sunny Portal</string>
+    <string name="loading">Ładowanie…</string>
+    <string name="title_activity_login">Zaloguj</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="login">Zaloguj</string>
+    <string name="e_mail">e-mail</string>
+    <string name="password">hasło</string>
+    <string name="connecting_server">Łączenie z serwerem…</string>
+    <string name="remember_me">Zapamiętaj mnie</string>
+    <string name="www_sunnyportal_com">www.sunnyportal.com</string>
+    <string name="sunny_portal">sunny portal</string>
+    <string name="instalation_view">Widok instalacji</string>
+    <string name="energy_and_power">Energia i moc</string>
+    <string name="Welcome">Witaj!</string>
+    <string name="close">Zamknięte</string>
+    <string name="open">Otwarte</string>
+    <string name="log_out">Wyloguj</string>
+</resources>
