@@ -4,41 +4,53 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.RelativeLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.*
 import kotlinx.android.synthetic.main.progress_dialog.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import pl.damrad.customsunnyportalapp.R
+import pl.damrad.customsunnyportalapp.fragments.EnergyAndPowerFragment
+import pl.damrad.customsunnyportalapp.fragments.InstalationFragment
 import pl.damrad.customsunnyportalapp.statics.DataObjects
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val END_SCALE: Float = 0.7f
+    }
 
     lateinit var toggle: ActionBarDrawerToggle
     private var dialogFlag = true
     private lateinit var dialog: Dialog
     private var jInterface: MyJavaScriptInterface = MyJavaScriptInterface()
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        toggle = ActionBarDrawerToggle(this@MainActivity, drawerLayout, R.string.open, R.string.close)
-
-        drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
+        setDrawerToggle()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstalationFragment()).commit()
+        navView.setCheckedItem(R.id.instlationViewItem)
         setNavigationItemListener()
 
         val url = intent.extras?.get(DataObjects.URL_INTENT)
@@ -49,6 +61,31 @@ class MainActivity : AppCompatActivity() {
         mainWeb.addJavascriptInterface(jInterface, "HtmlViewer");
 
         mainWeb.loadUrl(url.toString())
+    }
+
+    private fun setDrawerToggle() {
+        toggle = ActionBarDrawerToggle(this@MainActivity, drawerLayout, R.string.open, R.string.close)
+
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        drawerLayout.setScrimColor(Color.TRANSPARENT)
+        drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+
+                // Scale the View based on current slide offset
+                val diffScaledOffset = slideOffset * (1 - END_SCALE)
+                val offsetScale: Float = 1.0f - diffScaledOffset
+                contentView.scaleX = offsetScale;
+                contentView.scaleY = offsetScale;
+
+                // Translate the View, accounting for the scaled width
+                val xOffset = drawerView.width * slideOffset;
+                val xOffsetDiff = contentView.width * diffScaledOffset / 2;
+                val xTranslation = xOffset - xOffsetDiff;
+                contentView.translationX = xTranslation;
+            }
+        })
     }
 
     private inner class MyJavaScriptInterface() {
@@ -131,10 +168,10 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.instlationViewItem -> {
-
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstalationFragment()).commit()
                 }
                 R.id.energyAndPowerItem -> {
-
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, EnergyAndPowerFragment()).commit()
                 }
                 R.id.logOutItem -> {
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
@@ -142,6 +179,7 @@ class MainActivity : AppCompatActivity() {
                     finish()
                 }
             }
+            drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
     }
