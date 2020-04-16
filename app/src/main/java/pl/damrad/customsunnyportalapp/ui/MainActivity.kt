@@ -14,7 +14,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.RelativeLayout
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -25,8 +24,8 @@ import kotlinx.android.synthetic.main.progress_dialog.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import pl.damrad.customsunnyportalapp.R
-import pl.damrad.customsunnyportalapp.fragments.EnergyAndPowerFragment
-import pl.damrad.customsunnyportalapp.fragments.InstalationFragment
+import pl.damrad.customsunnyportalapp.ui.fragments.EnergyAndPowerFragment
+import pl.damrad.customsunnyportalapp.ui.fragments.InstallationFragment
 import pl.damrad.customsunnyportalapp.statics.DataObjects
 
 class MainActivity : AppCompatActivity() {
@@ -46,10 +45,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         setDrawerToggle()
+        setToolbar()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstalationFragment()).commit()
+        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
         navView.setCheckedItem(R.id.instlationViewItem)
         setNavigationItemListener()
 
@@ -63,6 +63,12 @@ class MainActivity : AppCompatActivity() {
         mainWeb.loadUrl(url.toString())
     }
 
+    private fun setToolbar() {
+        toolbarMain.setNavigationOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
     private fun setDrawerToggle() {
         toggle = ActionBarDrawerToggle(this@MainActivity, drawerLayout, R.string.open, R.string.close)
 
@@ -70,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
 
         drawerLayout.setScrimColor(Color.TRANSPARENT)
+        drawerLayout.elevation = 0.0f
         drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
 
@@ -168,19 +175,20 @@ class MainActivity : AppCompatActivity() {
         navView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.instlationViewItem -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstalationFragment()).commit()
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
                 }
                 R.id.energyAndPowerItem -> {
                     supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, EnergyAndPowerFragment()).commit()
                 }
-                R.id.logOutItem -> {
-                    val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
+        }
+
+        logOutItem.setOnClickListener {
+            val intent = Intent(this@MainActivity, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 

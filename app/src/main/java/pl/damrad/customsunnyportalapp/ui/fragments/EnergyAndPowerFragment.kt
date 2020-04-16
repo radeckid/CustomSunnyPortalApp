@@ -1,4 +1,4 @@
-package pl.damrad.customsunnyportalapp.fragments
+package pl.damrad.customsunnyportalapp.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

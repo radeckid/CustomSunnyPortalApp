@@ -15,32 +15,23 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/energy_foto"
+        android:text="@string/current_instalation_state"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/valueAllDayTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="20sp"
+    <ImageView
+        android:id="@+id/valueStateIV"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/current_instalation_state"
         app:layout_constraintEnd_toEndOf="@+id/textView"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:text="51,59 kWh" />
-
-    <TextView
-        android:id="@+id/valueAllTogetherTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="@+id/valueAllDayTV"
-        app:layout_constraintStart_toStartOf="@+id/valueAllDayTV"
-        app:layout_constraintTop_toBottomOf="@+id/valueAllDayTV"
-        tools:text="51,59 kWh" />
+        tools:src="@tools:sample/avatars" />
 </androidx.constraintlayout.widget.ConstraintLayout>

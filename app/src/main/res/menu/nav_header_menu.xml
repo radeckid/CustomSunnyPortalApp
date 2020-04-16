@@ -10,10 +10,6 @@
             android:id="@+id/energyAndPowerItem"
             android:icon="@drawable/ic_show_chart"
             android:title="@string/energy_and_power" />
-
-        <item
-            android:id="@+id/logOutItem"
-            android:icon="@drawable/ic_exit"
-            android:title="@string/log_out" />
     </group>
+
 </menu>

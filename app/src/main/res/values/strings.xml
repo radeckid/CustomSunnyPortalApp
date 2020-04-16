@@ -16,7 +16,7 @@
     <string name="connecting_server">Łączenie z serwerem…</string>
     <string name="remember_me">Zapamiętaj mnie</string>
     <string name="www_sunnyportal_com">www.sunnyportal.com</string>
-    <string name="sunny_portal">sunny portal</string>
+    <string name="sunny_portal">Sunny Portal</string>
     <string name="instalation_view">Widok instalacji</string>
     <string name="energy_and_power">Energia i moc</string>
     <string name="Welcome">Witaj!</string>
@@ -29,4 +29,6 @@
     <string name="current_power_PV">Aktualna moc PV</string>
     <string name="current_instalation_state">Aktualny stan instalacji</string>
     <string name="energy_foto">Energia fotowoltanicznej</string>
+    <string name="error_loaded">Błąd wczytywania</string>
+    <string name="all_together">Łącznie:</string>
 </resources>
