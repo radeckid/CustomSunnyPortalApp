@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/energy_foto"
+        android:text="@string/reduction_co2"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/valueAllDayTV"
+        android:id="@+id/valueCo2TV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -31,28 +31,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:text="51,59 kWh" />
+        tools:text="264 kg" />
 
 
     <TextView
-        android:id="@+id/textViewToday"
+        android:id="@+id/co2TextToday"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/today"
         android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="@+id/valueAllDayTV"
+        app:layout_constraintEnd_toEndOf="@+id/valueCo2TV"
         app:layout_constraintHorizontal_bias="0.05"
-        app:layout_constraintStart_toStartOf="@+id/valueAllDayTV"
-        app:layout_constraintTop_toBottomOf="@+id/valueAllDayTV" />
+        app:layout_constraintStart_toStartOf="@+id/valueCo2TV"
+        app:layout_constraintTop_toBottomOf="@+id/valueCo2TV" />
 
     <TextView
-        android:id="@+id/valueAllTogetherTV"
+        android:id="@+id/co2TogetherTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewToday"
-        tools:text="51,59 kWh" />
+        app:layout_constraintTop_toBottomOf="@+id/co2TextToday"
+        tools:text="Łącznie: 736 kg" />
 </androidx.constraintlayout.widget.ConstraintLayout>

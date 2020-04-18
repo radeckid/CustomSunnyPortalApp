@@ -6,12 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_instalation.*
 
 import pl.damrad.customsunnyportalapp.R
 import pl.damrad.customsunnyportalapp.adapters.InstallationAdapter
-import pl.damrad.customsunnyportalapp.adapters.InstallationItem
+import pl.damrad.customsunnyportalapp.adapters.items.*
+import pl.damrad.customsunnyportalapp.statics.Keys
 import pl.damrad.customsunnyportalapp.ui.MainActivity
 
 /**
@@ -34,10 +34,25 @@ class InstallationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val activity = activity as MainActivity
+        val data = activity.dataList
+
+        val currentPower = data[Keys.CURRENT_POWER]
+        val currentState = data[Keys.CURRENT_STATE]
+
+        val allDayPower = data[Keys.ALL_DAY_POWER]
+        val allTimePower = data[Keys.ALL_TIME_POWER]
+        val allDayUnderTextPower = data[Keys.ALL_DAY_TEXT]
+
+        val allDayCo2 = data[Keys.CO2_REDUCTION]
+        val allTimeCo2 = data[Keys.CO2_REDUCTION_TOGETHER]
+        val allDayUnderTextCo2 = data[Keys.CO2_REDUCTION_UNDER_TEXT]
+
         val list = ArrayList<InstallationItem>()
-        list.add(InstallationItem("1500", null, null, null))
-        list.add(InstallationItem(null, "OK", null, null))
-        list.add(InstallationItem(null, null, "51,21", "811"))
+        list.add(CurrentPowerItem(currentPower))
+        list.add(CurrentStateItem("OK"))
+        list.add(AllDayItem(allDayPower, allTimePower, allDayUnderTextPower))
+        list.add(Co2ReductionItem(allDayCo2, allTimeCo2, allDayUnderTextCo2))
 
         installationRecycler.apply {
             layoutManager = LinearLayoutManager(view.context)

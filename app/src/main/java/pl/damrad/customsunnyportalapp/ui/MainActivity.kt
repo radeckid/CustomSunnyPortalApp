@@ -27,12 +27,15 @@ import pl.damrad.customsunnyportalapp.R
 import pl.damrad.customsunnyportalapp.ui.fragments.EnergyAndPowerFragment
 import pl.damrad.customsunnyportalapp.ui.fragments.InstallationFragment
 import pl.damrad.customsunnyportalapp.statics.DataObjects
+import pl.damrad.customsunnyportalapp.statics.Keys
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val END_SCALE: Float = 0.7f
     }
+
+    var dataList: HashMap<String, String> = HashMap()
 
     lateinit var toggle: ActionBarDrawerToggle
     private var dialogFlag = true
@@ -49,7 +52,6 @@ class MainActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
         navView.setCheckedItem(R.id.instlationViewItem)
         setNavigationItemListener()
 
@@ -57,15 +59,23 @@ class MainActivity : AppCompatActivity() {
 
         mainWeb.webViewClient = setWebClient()
         mainWeb.settings.javaScriptEnabled = true
-        mainWeb.settings.loadsImagesAutomatically = false
+        mainWeb.settings.loadsImagesAutomatically = true
         mainWeb.addJavascriptInterface(jInterface, "HtmlViewer");
 
-        mainWeb.loadUrl(url.toString())
+        mainWeb.loadUrl(DataObjects.INSTALLATION_URL)
     }
 
     private fun setToolbar() {
         toolbarMain.setNavigationOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        toolbarMain.setOnMenuItemClickListener {
+            if (it.itemId == R.id.refreshDataItem) {
+                mainWeb.reload()
+                return@setOnMenuItemClickListener true
+            }
+            return@setOnMenuItemClickListener false
         }
     }
 
@@ -83,14 +93,14 @@ class MainActivity : AppCompatActivity() {
                 // Scale the View based on current slide offset
                 val diffScaledOffset = slideOffset * (1 - END_SCALE)
                 val offsetScale: Float = 1.0f - diffScaledOffset
-                contentView.scaleX = offsetScale;
-                contentView.scaleY = offsetScale;
+                contentView.scaleX = offsetScale
+                contentView.scaleY = offsetScale
 
                 // Translate the View, accounting for the scaled width
-                val xOffset = drawerView.width * slideOffset;
-                val xOffsetDiff = contentView.width * diffScaledOffset / 2;
-                val xTranslation = xOffset - xOffsetDiff;
-                contentView.translationX = xTranslation;
+                val xOffset = drawerView.width * slideOffset
+                val xOffsetDiff = contentView.width * diffScaledOffset / 2
+                val xTranslation = xOffset - xOffsetDiff
+                contentView.translationX = xTranslation
             }
         })
     }
@@ -112,7 +122,7 @@ class MainActivity : AppCompatActivity() {
 
                 //Handle domain links and open it in this app
                 if (DataObjects.BASE_URL == request!!.url.host) {
-                    view!!.settings.loadsImagesAutomatically = false
+                    view!!.settings.loadsImagesAutomatically = true
                     view.settings.javaScriptEnabled = true
                     view.settings.javaScriptCanOpenWindowsAutomatically = true
                     view.clearCache(true)
@@ -136,6 +146,8 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
+                Thread.sleep(500)
+
                 mainWeb.loadUrl("javascript:window.HtmlViewer.showHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');")
 
                 if (dialog.isShowing) {
@@ -152,20 +164,52 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("StaticFieldLeak")
     private inner class AsyncGet(
         val data: String
-    ) : AsyncTask<Void, Void, String>() {
+    ) : AsyncTask<Void, Void, HashMap<String, String>>() {
 
 
-        override fun doInBackground(vararg params: Void?): String {
+        override fun doInBackground(vararg params: Void?): HashMap<String, String> {
+            val hashMap = HashMap<String, String>()
+
             val document: Document = Jsoup.parse(data)
-            return document.getElementById("ctl00_Header_lblUserName").text()
 
+            val installationName = document.getElementsByClass("analysis").text()
+
+            val currentPower = document.selectFirst("div[data-name='pvPower']").select(".mainValueAmount").text()
+            val currentState = document.getElementsByClass("analysis").text() //TODO
+
+            val allDayPower = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldValue").text()
+            val allDayUnderText =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldPeriodTitle").text()
+            val allTimePower =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldTotalValue").text()
+
+            val co2ReductionValue = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionValue").text()
+            val co2ReductionTogether = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionTotalValue").text()
+            val co2ReductionUnderText = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionPeriodTitle").text()
+
+
+            hashMap[Keys.INSTALLATION_NAME] = installationName
+            hashMap[Keys.CURRENT_POWER] = currentPower
+            hashMap[Keys.CURRENT_STATE] = currentState
+
+            hashMap[Keys.ALL_DAY_POWER] = allDayPower
+            hashMap[Keys.ALL_DAY_TEXT] = allDayUnderText
+            hashMap[Keys.ALL_TIME_POWER] = allTimePower
+
+            hashMap[Keys.CO2_REDUCTION] = co2ReductionValue
+            hashMap[Keys.CO2_REDUCTION_TOGETHER] = co2ReductionTogether
+            hashMap[Keys.CO2_REDUCTION_UNDER_TEXT] = co2ReductionUnderText
+
+            return hashMap
         }
 
-        override fun onPostExecute(result: String?) {
+        override fun onPostExecute(result: HashMap<String, String>?) {
             super.onPostExecute(result)
 
             if (result!!.isNotEmpty()) {
-                logedUserTV.text = result
+                logedUserTV.text = result[Keys.INSTALLATION_NAME]
+                dataList = result
+                supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
             }
         }
 
