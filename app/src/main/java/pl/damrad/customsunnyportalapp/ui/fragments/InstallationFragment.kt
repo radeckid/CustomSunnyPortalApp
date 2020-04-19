@@ -38,6 +38,8 @@ class InstallationFragment : Fragment() {
         val data = activity.dataList
 
         val currentPower = data[Keys.CURRENT_POWER]
+        val subHeadPower = data[Keys.SUB_HEAD_POWER]
+
         val currentState = data[Keys.CURRENT_STATE]
 
         val allDayPower = data[Keys.ALL_DAY_POWER]
@@ -49,8 +51,8 @@ class InstallationFragment : Fragment() {
         val allDayUnderTextCo2 = data[Keys.CO2_REDUCTION_UNDER_TEXT]
 
         val list = ArrayList<InstallationItem>()
-        list.add(CurrentPowerItem(currentPower))
-        list.add(CurrentStateItem("OK"))
+        list.add(CurrentPowerItem(currentPower, subHeadPower))
+        list.add(CurrentStateItem(currentState))
         list.add(AllDayItem(allDayPower, allTimePower, allDayUnderTextPower))
         list.add(Co2ReductionItem(allDayCo2, allTimeCo2, allDayUnderTextCo2))
 

@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.progress_dialog.*
 import pl.damrad.customsunnyportalapp.R
 import pl.damrad.customsunnyportalapp.statics.DataObjects
+import pl.damrad.customsunnyportalapp.statics.Keys
 
 class LoginActivity : AppCompatActivity() {
 
@@ -62,6 +63,8 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        emailTV.requestFocus()
+
         onClickListeners(sharedPref)
         openWebBrowser()
     }
@@ -93,6 +96,13 @@ class LoginActivity : AppCompatActivity() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 showDialog()
+            }
+
+            override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
+                val intent = Intent(this@LoginActivity, ErrorActivity::class.java)
+                intent.putExtra(Keys.ERROR_ACTION, errorCode)
+                startActivity(intent)
+                finish()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -154,6 +164,8 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onClickListeners(sharedPref: SharedPreferences) {
         loginBtn.setOnClickListener {
+
+            setEmailAndPasswordInput(emailTV.editText?.text.toString(), passwordTV.editText?.text.toString())
 
             loginWeb.loadUrl(
                 "javascript:(function() { " +

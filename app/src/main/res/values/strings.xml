@@ -32,4 +32,29 @@
     <string name="today">Dziś</string>
     <string name="power">Power</string>
     <string name="reduction_co2">Redukcja emisji CO2</string>
+
+
+    <!--ERRORS -->
+    <string name="ERROR_AUTHENTICATION">Uwierzytelnienie użytkownika nie powiodło się na serwerze</string>
+    <string name="ERROR_BAD_URL">Błędny adres URL</string>
+    <string name="ERROR_CONNECT">Nie udało się połączyć z serwerem</string>
+    <string name="ERROR_FAILED_SSL_HANDSHAKE">Nie można wykonać uzgadniania protokołu SSL</string>
+    <string name="ERROR_FILE">Ogólny błąd pliku</string>
+    <string name="ERROR_FILE_NOT_FOUND">Nie znaleziono pliku</string>
+    <string name="ERROR_HOST_LOOKUP">Wyszukiwanie nazwy hosta serwera lub proxy nie powiodło się</string>
+    <string name="ERROR_IO">Nie można odczytać lub zapisać na serwerze</string>
+    <string name="ERROR_PROXY_AUTHENTICATION">Uwierzytelnianie użytkownika nie powiodło się na serwerze proxy</string>
+    <string name="ERROR_REDIRECT_LOOP">Zbyt wiele przekierowań</string>
+    <string name="ERROR_TIMEOUT">Przekroczono limit czasu połączenia</string>
+    <string name="ERROR_TOO_MANY_REQUESTS">Zbyt wiele żądań podczas tego ładowania</string>
+    <string name="ERROR_UNKNOWN">Ogólny błąd</string>
+    <string name="ERROR_UNSAFE_RESOURCE">Ładowanie zasobów zostało anulowane przez Safe Browsing</string>
+    <string name="ERROR_UNSUPPORTED_AUTH_SCHEME">Nieobsługiwany schemat uwierzytelniania (nie podstawowy lub skrócony)</string>
+    <string name="ERROR_UNSUPPORTED_SCHEME">Nieobsługiwany schemat URI</string>
+    <string name="SAFE_BROWSING_THREAT_BILLING">Zasób został zablokowany, ponieważ może odszukać użytkownika do zawarcia umowy rozliczeniowej</string>
+    <string name="SAFE_BROWSING_THREAT_MALWARE">The resource was blocked because it contains malware</string>
+    <string name="SAFE_BROWSING_THREAT_PHISHING">Zasób został zablokowany, ponieważ zawiera zwodniczą treść</string>
+    <string name="SAFE_BROWSING_THREAT_UNKNOWN">Zasób został zablokowany z nieznanego powodu</string>
+    <string name="SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE">Zasób został zablokowany, ponieważ zawiera niechciane oprogramowanie</string>
+
 </resources>

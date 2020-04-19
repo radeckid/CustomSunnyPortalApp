@@ -18,6 +18,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.nav_header.*
 import kotlinx.android.synthetic.main.progress_dialog.*
@@ -54,8 +55,6 @@ class MainActivity : AppCompatActivity() {
 
         navView.setCheckedItem(R.id.instlationViewItem)
         setNavigationItemListener()
-
-        val url = intent.extras?.get(DataObjects.URL_INTENT)
 
         mainWeb.webViewClient = setWebClient()
         mainWeb.settings.javaScriptEnabled = true
@@ -143,6 +142,13 @@ class MainActivity : AppCompatActivity() {
                 showDialog()
             }
 
+            override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
+                val intent = Intent(this@MainActivity, ErrorActivity::class.java)
+                intent.putExtra(Keys.ERROR_ACTION, errorCode)
+                startActivity(intent)
+                finish()
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
@@ -173,9 +179,23 @@ class MainActivity : AppCompatActivity() {
             val document: Document = Jsoup.parse(data)
 
             val installationName = document.getElementsByClass("analysis").text()
+            var installationImageUrl = document.select("div.analysis").attr("style")
+
+            installationImageUrl = try {
+                installationImageUrl.substring(installationImageUrl.indexOf("url(") + 4, installationImageUrl.indexOf(");"))
+            } catch (ignored: Exception) {
+                ""
+            }
 
             val currentPower = document.selectFirst("div[data-name='pvPower']").select(".mainValueAmount").text()
-            val currentState = document.getElementsByClass("analysis").text() //TODO
+            val subHeadPower = document.selectFirst("div[data-name='pvPower']").select(".widgetSubHead").text()
+
+            var currentStateUrl = document.select("div[data-name='plantStatus']").select(".widgetBody").attr("style")
+            currentStateUrl = try {
+                currentStateUrl.substring(currentStateUrl.indexOf("url(\"") + 5, currentStateUrl.indexOf("\")"))
+            } catch (ignored: Exception) {
+                ""
+            }
 
             val allDayPower = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldValue").text()
             val allDayUnderText =
@@ -183,14 +203,21 @@ class MainActivity : AppCompatActivity() {
             val allTimePower =
                 document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldTotalValue").text()
 
-            val co2ReductionValue = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionValue").text()
-            val co2ReductionTogether = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionTotalValue").text()
-            val co2ReductionUnderText = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionPeriodTitle").text()
+            val co2ReductionValue =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionValue").text()
+            val co2ReductionTogether =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionTotalValue").text()
+            val co2ReductionUnderText =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_carbonWidget_carbonReductionPeriodTitle").text()
 
 
             hashMap[Keys.INSTALLATION_NAME] = installationName
+            hashMap[Keys.INSTALLATION_IMAGE] = installationImageUrl
+
             hashMap[Keys.CURRENT_POWER] = currentPower
-            hashMap[Keys.CURRENT_STATE] = currentState
+            hashMap[Keys.SUB_HEAD_POWER] = subHeadPower
+
+            hashMap[Keys.CURRENT_STATE] = currentStateUrl
 
             hashMap[Keys.ALL_DAY_POWER] = allDayPower
             hashMap[Keys.ALL_DAY_TEXT] = allDayUnderText
@@ -208,6 +235,18 @@ class MainActivity : AppCompatActivity() {
 
             if (result!!.isNotEmpty()) {
                 logedUserTV.text = result[Keys.INSTALLATION_NAME]
+
+                var image = result[Keys.INSTALLATION_IMAGE];
+                if (!image.isNullOrEmpty()) {
+                    image = "http://${DataObjects.BASE_URL}$image"
+                    image = image.replace("32x32", "250x250")
+
+                    Picasso.get()
+                        .load(image)
+                        .placeholder(R.drawable.ic_logo)
+                        .into(fotovoltanicImage)
+                }
+
                 dataList = result
                 supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
             }

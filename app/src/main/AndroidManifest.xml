@@ -11,6 +11,7 @@
         android:roundIcon="@drawable/ic_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.ErrorActivity"></activity>
         <activity
             android:name=".ui.LoginActivity"
             android:windowSoftInputMode="adjustPan|adjustResize">

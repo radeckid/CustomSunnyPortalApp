@@ -13,6 +13,8 @@ import com.squareup.picasso.Picasso
 import pl.damrad.customsunnyportalapp.R
 import pl.damrad.customsunnyportalapp.adapters.items.*
 import pl.damrad.customsunnyportalapp.statics.CardIds
+import pl.damrad.customsunnyportalapp.statics.DataObjects
+import pl.damrad.customsunnyportalapp.statics.Keys
 
 class InstallationAdapter(
     private val list: ArrayList<InstallationItem>,
@@ -26,15 +28,15 @@ class InstallationAdapter(
                 CurrentPowerViewHolder(view)
             }
             CardIds.CURRENT_STATE -> {
-                val view = LayoutInflater.from(context).inflate(R.layout.current_installation_state, parent, false)
+                val view = LayoutInflater.from(context).inflate(R.layout.item_current_installation_state, parent, false)
                 InstallationStateHolder(view)
             }
             CardIds.ALL_DAY_STATE -> {
-                val view = LayoutInflater.from(context).inflate(R.layout.energy_fotovoltanic, parent, false)
+                val view = LayoutInflater.from(context).inflate(R.layout.item_energy_fotovoltanic, parent, false)
                 AllDayViewHolder(view)
             }
             CardIds.CO_2_STATE -> {
-                val view = LayoutInflater.from(context).inflate(R.layout.co2_reduction, parent, false)
+                val view = LayoutInflater.from(context).inflate(R.layout.item_co2_reduction, parent, false)
                 Co2ReductionViewHolder(view)
             }
             else -> {
@@ -49,10 +51,18 @@ class InstallationAdapter(
         when (holder) {
             is CurrentPowerViewHolder -> {
                 holder.currentPowerTV.text = "${(list[position] as CurrentPowerItem).currentPower} W"
+                holder.subHeadPvPowerTV.text = (list[position] as CurrentPowerItem).subHeadPower
             }
             is InstallationStateHolder -> {
-                //TODO placeholder image for a while
-                Picasso.with(context).load(R.mipmap.ic_ok_foreground).into(holder.stateIV)
+                var image = (list[position] as CurrentStateItem).currentState
+                if (!image.isNullOrEmpty()) {
+                    image = "http://${DataObjects.BASE_URL}$image"
+                    Picasso.get()
+                        .load(image)
+                        .placeholder(R.drawable.ic_autorenew)
+                        .into(holder.stateIV)
+                }
+
             }
             is AllDayViewHolder -> {
                 holder.allDayTV.text = "${(list[position] as AllDayItem).allDayWh} kWh"
@@ -97,6 +107,7 @@ class InstallationAdapter(
 
     inner class CurrentPowerViewHolder(itemView: View) : ViewHolder(itemView) {
         val currentPowerTV: TextView = itemView.findViewById(R.id.valueCurrentTV)
+        val subHeadPvPowerTV: TextView = itemView.findViewById(R.id.subHeadPvPowerTV)
     }
 
     inner class InstallationStateHolder(itemView: View) : ViewHolder(itemView) {

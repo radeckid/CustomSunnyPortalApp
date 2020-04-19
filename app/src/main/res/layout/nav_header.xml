@@ -19,6 +19,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
+            android:id="@+id/fotovoltanicImage"
             android:layout_width="150dp"
             android:layout_height="95dp"
             app:srcCompat="@drawable/ic_logo" />

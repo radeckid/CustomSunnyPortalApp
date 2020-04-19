@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="4dp"
     android:background="@drawable/item_background"
     android:elevation="5dp"
     android:padding="8dp">
@@ -23,6 +26,16 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/subHeadPvPowerTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:text="5 godzin temu" />
+
+    <TextView
         android:id="@+id/valueCurrentTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,6 +43,6 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@+id/textView"
         app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/subHeadPvPowerTV"
         tools:text="8000 w" />
 </androidx.constraintlayout.widget.ConstraintLayout>
