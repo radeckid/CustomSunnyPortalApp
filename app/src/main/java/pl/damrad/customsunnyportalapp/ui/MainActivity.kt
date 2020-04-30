@@ -2,18 +2,18 @@ package pl.damrad.customsunnyportalapp.ui
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.AsyncTask
-import android.os.Bundle
+import android.net.Uri
+import android.os.*
 import android.view.MenuItem
 import android.view.View
 import android.view.Window
-import android.webkit.JavascriptInterface
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -25,20 +25,24 @@ import kotlinx.android.synthetic.main.progress_dialog.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import pl.damrad.customsunnyportalapp.R
-import pl.damrad.customsunnyportalapp.ui.fragments.EnergyAndPowerFragment
-import pl.damrad.customsunnyportalapp.ui.fragments.InstallationFragment
 import pl.damrad.customsunnyportalapp.statics.DataObjects
 import pl.damrad.customsunnyportalapp.statics.Keys
+import pl.damrad.customsunnyportalapp.ui.fragments.EnergyAndPowerFragment
+import pl.damrad.customsunnyportalapp.ui.fragments.InstallationFragment
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val END_SCALE: Float = 0.7f
+        const val INSTALLATION_FRAGMENT: String = "pl.damrad.customsunnyportalapp.ui.INSTALLATION_FRAGMENT"
+        const val ENERGY_AND_POWER_FRAGMENT: String = "pl.damrad.customsunnyportalapp.ui.ENERGY_AND_POWER_FRAGMENT"
+        const val VISIBLE_FRAGMENT: String = "pl.damrad.customsunnyportalapp.ui.VISIBLE_FRAGMENT"
     }
 
     var dataList: HashMap<String, String> = HashMap()
 
-    lateinit var toggle: ActionBarDrawerToggle
+    private lateinit var toggle: ActionBarDrawerToggle
     private var dialogFlag = true
     private lateinit var dialog: Dialog
     private var jInterface: MyJavaScriptInterface = MyJavaScriptInterface()
@@ -56,12 +60,42 @@ class MainActivity : AppCompatActivity() {
         navView.setCheckedItem(R.id.instlationViewItem)
         setNavigationItemListener()
 
+        mainWeb.settings.loadWithOverviewMode = true
+        mainWeb.settings.useWideViewPort = true
+        mainWeb.setPadding(0, 0, 0, 0)
         mainWeb.webViewClient = setWebClient()
         mainWeb.settings.javaScriptEnabled = true
         mainWeb.settings.loadsImagesAutomatically = true
-        mainWeb.addJavascriptInterface(jInterface, "HtmlViewer");
+        mainWeb.addJavascriptInterface(jInterface, "HtmlViewer")
+        mainWeb.setDownloadListener(myDownloadListener())
 
         mainWeb.loadUrl(DataObjects.INSTALLATION_URL)
+
+        val sharedPrefVisible = getSharedPreferences(VISIBLE_FRAGMENT, Context.MODE_PRIVATE)
+        if (sharedPrefVisible != null) {
+            val fragment = sharedPrefVisible.getString(VISIBLE_FRAGMENT, INSTALLATION_FRAGMENT)
+            when (fragment) {
+                INSTALLATION_FRAGMENT -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment(), INSTALLATION_FRAGMENT).commit()
+                }
+                ENERGY_AND_POWER_FRAGMENT -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, EnergyAndPowerFragment(), ENERGY_AND_POWER_FRAGMENT)
+                        .commit()
+                }
+            }
+        } else {
+            supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment(), INSTALLATION_FRAGMENT).commit()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        val sharedPref = this@MainActivity.getPreferences(Context.MODE_PRIVATE) ?: return
+        with(sharedPref.edit()) {
+            putString(VISIBLE_FRAGMENT, supportFragmentManager.fragments[0].tag)
+            commit()
+        }
     }
 
     private fun setToolbar() {
@@ -71,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
         toolbarMain.setOnMenuItemClickListener {
             if (it.itemId == R.id.refreshDataItem) {
-                mainWeb.reload()
+                mainWeb.loadUrl(DataObjects.INSTALLATION_URL)
                 return@setOnMenuItemClickListener true
             }
             return@setOnMenuItemClickListener false
@@ -85,7 +119,7 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
 
         drawerLayout.setScrimColor(Color.TRANSPARENT)
-        drawerLayout.elevation = 0.0f
+        drawerLayout.drawerElevation = 0.0f;
         drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
 
@@ -104,15 +138,36 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private inner class MyJavaScriptInterface() {
-        @JavascriptInterface
-        fun showHTML(html: String?) {
-            if (html != null) {
-                AsyncGet(html).execute()
+    private fun setNavigationItemListener() {
+        navView.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.instlationViewItem -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment(), INSTALLATION_FRAGMENT).commit()
+                }
+                R.id.energyAndPowerItem -> {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, EnergyAndPowerFragment(), ENERGY_AND_POWER_FRAGMENT)
+                        .commit()
+                }
             }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+
+        logOutItem.setOnClickListener {
+            val intent = Intent(this@MainActivity, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (toggle.onOptionsItemSelected(item)) {
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    //WebView client
     private fun setWebClient(): WebViewClient {
         return object : WebViewClient() {
 
@@ -128,7 +183,24 @@ class MainActivity : AppCompatActivity() {
                     view.loadUrl(request.url.toString())
 
                     return true
+                } else if (request.url.host?.endsWith(".png")!!) {
+                    val source: Uri = Uri.parse(request.url.host)
+
+                    // Make a new request pointing to the .apk url
+                    val newRequest: DownloadManager.Request = DownloadManager.Request(source)
+
+                    // appears the same in Notification bar while downloading
+                    newRequest.setDescription("Description for the DownloadManager Bar")
+                    newRequest.setTitle("diagram.png");
+                    newRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    // save the file in the "Downloads" folder of SDCARD
+                    newRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "diagram.png")
+                    // get download service and enqueue file
+                    val manager: DownloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    manager.enqueue(newRequest)
+                    return true
                 }
+
 
                 //If link is from another domain it just start a normal browser
                 val intent = Intent(Intent.ACTION_VIEW, request.url)
@@ -152,9 +224,23 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                Thread.sleep(500)
+                if (url?.trim()?.endsWith(".png")!!) {
+                    val downloadUrl = "javascript:(function() { " +
+                            "    var element = document.createElement('a');\n" +
+                            "    element.setAttribute('href', '');\n" +
+                            "    element.setAttribute('download', '" + dataList[Keys.INSTALLATION_DIAGRAM_IMAGE] + "');\n" +
+                            "    element.style.display = 'none';\n" +
+                            "    document.body.appendChild(element);\n" +
+                            "    element.click();\n" +
+                            "})()"
 
-                mainWeb.loadUrl("javascript:window.HtmlViewer.showHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');")
+                    mainWeb.loadUrl(downloadUrl)
+
+                } else {
+                    Handler().postDelayed({
+                        mainWeb.loadUrl("javascript:window.HtmlViewer.showHTML('<head>'+document.getElementsByTagName('html')[0].innerHTML+'</head>');")
+                    }, 1000)
+                }
 
                 if (dialog.isShowing) {
                     try {
@@ -167,6 +253,41 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun myDownloadListener(): DownloadListener {
+        return DownloadListener { url, _, _, mimetype, _ ->
+            val cookie = CookieManager.getInstance().getCookie(url)
+
+            val request = DownloadManager.Request(Uri.parse(url))
+
+            val file = File(applicationContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "diagram.png")
+
+            if (file.exists()) {
+                file.delete()
+            }
+
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
+                .setDestinationInExternalFilesDir(applicationContext, Environment.DIRECTORY_PICTURES, "diagram.png")
+                .addRequestHeader("Cookie", cookie)
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(true)
+                .setMimeType(mimetype)
+
+            val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            dm.enqueue(request)
+        }
+    }
+
+    //Interface needed to take all html file in string from javascript
+    private inner class MyJavaScriptInterface() {
+        @JavascriptInterface
+        fun showHTML(html: String?) {
+            if (html != null) {
+                AsyncGet(html).execute()
+            }
+        }
+    }
+
+    //AsyncTask for Scraping data from web
     @SuppressLint("StaticFieldLeak")
     private inner class AsyncGet(
         val data: String
@@ -187,6 +308,10 @@ class MainActivity : AppCompatActivity() {
                 ""
             }
 
+            val installationDiagramUrl =
+                document.getElementById("ctl00\$ContentPlaceHolder1\$UserControlShowDashboard1\$UserControlShowEnergyAndPower1\$_diagram")
+                    .attr("src")
+
             val currentPower = document.selectFirst("div[data-name='pvPower']").select(".mainValueAmount").text()
             val subHeadPower = document.selectFirst("div[data-name='pvPower']").select(".widgetSubHead").text()
 
@@ -197,7 +322,10 @@ class MainActivity : AppCompatActivity() {
                 ""
             }
 
-            val allDayPower = document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldValue").text()
+            val allDayPower =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldValue").text()
+            val allDayPowerUnit =
+                document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldUnit").text()
             val allDayUnderText =
                 document.getElementById("ctl00_ContentPlaceHolder1_UserControlShowDashboard1_energyYieldWidget_energyYieldPeriodTitle").text()
             val allTimePower =
@@ -214,12 +342,15 @@ class MainActivity : AppCompatActivity() {
             hashMap[Keys.INSTALLATION_NAME] = installationName
             hashMap[Keys.INSTALLATION_IMAGE] = installationImageUrl
 
+            hashMap[Keys.INSTALLATION_DIAGRAM_IMAGE] = installationDiagramUrl
+
             hashMap[Keys.CURRENT_POWER] = currentPower
             hashMap[Keys.SUB_HEAD_POWER] = subHeadPower
 
             hashMap[Keys.CURRENT_STATE] = currentStateUrl
 
             hashMap[Keys.ALL_DAY_POWER] = allDayPower
+            hashMap[Keys.ALL_DAY_POWER_UNIT] = allDayPowerUnit
             hashMap[Keys.ALL_DAY_TEXT] = allDayUnderText
             hashMap[Keys.ALL_TIME_POWER] = allTimePower
 
@@ -236,52 +367,39 @@ class MainActivity : AppCompatActivity() {
             if (result!!.isNotEmpty()) {
                 logedUserTV.text = result[Keys.INSTALLATION_NAME]
 
-                var image = result[Keys.INSTALLATION_IMAGE];
-                if (!image.isNullOrEmpty()) {
-                    image = "http://${DataObjects.BASE_URL}$image"
-                    image = image.replace("32x32", "250x250")
+                var imageInstallation = result[Keys.INSTALLATION_IMAGE]
+                if (!imageInstallation.isNullOrEmpty()) {
+                    imageInstallation = "https://${DataObjects.BASE_URL}$imageInstallation"
+                    imageInstallation = imageInstallation.replace("32x32", "250x250")
 
                     Picasso.get()
-                        .load(image)
+                        .load(imageInstallation)
                         .placeholder(R.drawable.ic_logo)
                         .into(fotovoltanicImage)
+
+                }
+
+                var imageDiagramUrl = result[Keys.INSTALLATION_DIAGRAM_IMAGE]
+                if (!imageDiagramUrl.isNullOrEmpty()) {
+                    imageDiagramUrl = "https://${DataObjects.BASE_URL}$imageDiagramUrl"
+
+                    mainWeb.loadUrl(imageDiagramUrl)
                 }
 
                 dataList = result
-                supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
+
+                val actualFragment = supportFragmentManager.fragments[0]
+
+                if (actualFragment.isVisible) {
+                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, actualFragment.javaClass.newInstance()).commit()
+                }
+
             }
         }
 
     }
 
-    private fun setNavigationItemListener() {
-        navView.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.instlationViewItem -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, InstallationFragment()).commit()
-                }
-                R.id.energyAndPowerItem -> {
-                    supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, EnergyAndPowerFragment()).commit()
-                }
-            }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
-
-        logOutItem.setOnClickListener {
-            val intent = Intent(this@MainActivity, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (toggle.onOptionsItemSelected(item)) {
-            return true
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
+    //Shows loading dialog
     private fun showDialog(title: String = "") {
         if (dialogFlag) {
             dialog = Dialog(this@MainActivity)

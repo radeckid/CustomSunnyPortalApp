@@ -14,7 +14,6 @@ import pl.damrad.customsunnyportalapp.R
 import pl.damrad.customsunnyportalapp.adapters.items.*
 import pl.damrad.customsunnyportalapp.statics.CardIds
 import pl.damrad.customsunnyportalapp.statics.DataObjects
-import pl.damrad.customsunnyportalapp.statics.Keys
 
 class InstallationAdapter(
     private val list: ArrayList<InstallationItem>,
@@ -56,16 +55,15 @@ class InstallationAdapter(
             is InstallationStateHolder -> {
                 var image = (list[position] as CurrentStateItem).currentState
                 if (!image.isNullOrEmpty()) {
-                    image = "http://${DataObjects.BASE_URL}$image"
+                    image = "https://${DataObjects.BASE_URL}$image"
                     Picasso.get()
                         .load(image)
-                        .placeholder(R.drawable.ic_autorenew)
+                        .placeholder(R.drawable.ic_cloud_off)
                         .into(holder.stateIV)
                 }
-
             }
             is AllDayViewHolder -> {
-                holder.allDayTV.text = "${(list[position] as AllDayItem).allDayWh} kWh"
+                holder.allDayTV.text = "${(list[position] as AllDayItem).allDayWh} ${(list[position] as AllDayItem).allDayPowerUnit}"
                 holder.valueAllTogetherTV.text = "${context.getString(R.string.all_together)} ${(list[position] as AllDayItem).allTogetherWh} kWh"
                 holder.textUnderToday.text = (list[position] as AllDayItem).allDayText
             }

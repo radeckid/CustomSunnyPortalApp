@@ -56,5 +56,8 @@
     <string name="SAFE_BROWSING_THREAT_PHISHING">Zasób został zablokowany, ponieważ zawiera zwodniczą treść</string>
     <string name="SAFE_BROWSING_THREAT_UNKNOWN">Zasób został zablokowany z nieznanego powodu</string>
     <string name="SAFE_BROWSING_THREAT_UNWANTED_SOFTWARE">Zasób został zablokowany, ponieważ zawiera niechciane oprogramowanie</string>
+    <string name="check_internet_connection">Sprawdź połączenie z internetem</string>
+    <string name="production_diagram">Production Diagram</string>
+    <string name="load_diagram">Załaduj diagram</string>
 
 </resources>

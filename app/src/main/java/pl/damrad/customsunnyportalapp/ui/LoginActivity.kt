@@ -1,10 +1,12 @@
 package pl.damrad.customsunnyportalapp.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -13,6 +15,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.progress_dialog.*
 import pl.damrad.customsunnyportalapp.R
@@ -26,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
         const val SHARED_EMAIL = "pl.damrad.customsunnyportalapp.SHARED_EMAIL"
         const val SHARED_PASSWORD = "pl.damrad.customsunnyportalapp.SHARED_PASSWORD"
         const val SHARED_REMEMBER = "pl.damrad.customsunnyportalapp.SHARED_REMEMBER"
+        const val MY_PERMISSION_REQUEST = 12
     }
 
     private var email: String? = null
@@ -67,6 +72,24 @@ class LoginActivity : AppCompatActivity() {
 
         onClickListeners(sharedPref)
         openWebBrowser()
+    }
+
+    private fun checkPermissions() {
+        if (ContextCompat.checkSelfPermission(this@LoginActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this@LoginActivity,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.INTERNET, Manifest.permission.READ_EXTERNAL_STORAGE),
+                MY_PERMISSION_REQUEST
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode != MY_PERMISSION_REQUEST) {
+            finish()
+        }
     }
 
     private fun setWebClient(): WebViewClient {
